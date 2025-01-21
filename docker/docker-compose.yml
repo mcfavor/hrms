@@ -23,7 +23,7 @@ services:
       - SHELL=/bin/bash
     working_dir: /home/frappe
     volumes:
-      - .:/workspace
+      - ./init.sh:/workspace/init.sh
     ports:
       - 8100:8100
       - 9000:9000
