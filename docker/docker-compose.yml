@@ -52,7 +52,7 @@ services:
     bench use hrms.localhost
     bench start
     EOF
-      chmod +x /workspace/init.sh
+          chmod +x /workspace/init.sh
       fi
       bash /workspace/init.sh'
     environment:
