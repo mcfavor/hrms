@@ -17,40 +17,43 @@ services:
   frappe:
     image: frappe/bench:latest
     command: >
-      bash -c '
-      echo "#!/bin/bash
-      if [ -d \"/home/frappe/frappe-bench/apps/frappe\" ]; then
-          echo \"Bench already exists, skipping init\"
-          cd frappe-bench
-          bench start
-      else
-          echo \"Creating new bench...\"
-      fi
-      export PATH=\"\${NVM_DIR}/versions/node/v\${NODE_VERSION_DEVELOP}/bin/:\${PATH}\"
-      bench init --skip-redis-config-generation frappe-bench
+    bash -c '
+    if [ ! -f /workspace/init.sh ]; then
+      echo "Creating init.sh script..."
+      cat <<EOF > /workspace/init.sh
+    #!/bin/bash
+    if [ -d "/home/frappe/frappe-bench/apps/frappe" ]; then
+      echo "Bench already exists, skipping init"
       cd frappe-bench
-      # Use containers instead of localhost
-      bench set-mariadb-host mariadb
-      bench set-redis-cache-host redis:6379
-      bench set-redis-queue-host redis:6379
-      bench set-redis-socketio-host redis:6379
-      # Remove redis, watch from Procfile
-      sed -i '\''/redis/d'\'' ./Procfile
-      sed -i '\''/watch/d'\'' ./Procfile
-      bench get-app erpnext
-      bench get-app hrms
-      bench new-site hrms.localhost \
-      --force \
-      --mariadb-root-password 123 \
-      --admin-password admin \
-      --no-mariadb-socket
-      bench --site hrms.localhost install-app hrms
-      bench --site hrms.localhost set-config developer_mode 1
-      bench --site hrms.localhost enable-scheduler
-      bench --site hrms.localhost clear-cache
-      bench use hrms.localhost
-      bench start" > /workspace/init.sh && 
-      chmod +x /workspace/init.sh && 
+      bench start
+    else
+      echo "Creating new bench..."
+    fi
+    export PATH="\${NVM_DIR}/versions/node/v\${NODE_VERSION_DEVELOP}/bin/:\${PATH}"
+    bench init --skip-redis-config-generation frappe-bench
+    cd frappe-bench
+    bench set-mariadb-host mariadb
+    bench set-redis-cache-host redis:6379
+    bench set-redis-queue-host redis:6379
+    bench set-redis-socketio-host redis:6379
+    sed -i "/redis/d" ./Procfile
+    sed -i "/watch/d" ./Procfile
+    bench get-app erpnext
+    bench get-app hrms
+    bench new-site hrms.localhost \
+    --force \
+    --mariadb-root-password 123 \
+    --admin-password admin \
+    --no-mariadb-socket
+    bench --site hrms.localhost install-app hrms
+    bench --site hrms.localhost set-config developer_mode 1
+    bench --site hrms.localhost enable-scheduler
+    bench --site hrms.localhost clear-cache
+    bench use hrms.localhost
+    bench start
+    EOF
+      chmod +x /workspace/init.sh
+      fi
       bash /workspace/init.sh'
     environment:
       - SHELL=/bin/bash
